@@ -1,0 +1,29 @@
+			sensor0:sensor@0 {
+				device_type = "sensor0";
+				sensor0_mname = "ov5647_mipi";
+				sensor0_twi_cci_id = <1>;
+				sensor0_twi_addr = <0x6c>;
+				sensor0_mclk_id = <>;
+				sensor0_pos = "rear";
+				sensor0_isp_used = <1>;
+				sensor0_fmt = <1>;
+				sensor0_stby_mode = <0>;
+				sensor0_vflip = <0>;
+				sensor0_hflip = <0>;
+				/*sensor0_iovdd-supply = <1800000>;
+				sensor0_iovdd_vol = <>;
+				sensor0_avdd-supply = <2800000>;
+				sensor0_avdd_vol = <>;
+				sensor0_dvdd-supply = <1200000>;
+				sensor0_dvdd_vol = <>;*/
+				sensor0_reset = <>;
+				//sensor0_power_en = <>;
+				//sensor0_pwdn = <>;
+				sensor0_power_en = <&pio PA 8 1 0 1 0>;
+				sensor0_pwdn = <&pio PA 9 1 0 1 0>;
+				/*sensor0_sm_hs = <&pio PE 2 1 0 1 0>;*/
+				/*sensor0_sm_vs = <&pio PE 3 1 0 1 0>;*/
+				flash_handle = <&flash0>; //&flash0
+				act_handle = <&actuator0>;	//&actuator0
+				status	= "okay";
+			};
