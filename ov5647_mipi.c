@@ -1,8 +1,5 @@
 #include "ov5647_mipi.h"
 #define MHZ 1000000
-static struct regval_list sensor_fmt_raw[] = {
-
-};
 //-------------------------------------------------------------------------------------
 /*
  * Code for dealing with controls.
@@ -265,8 +262,8 @@ static int sensor_init(struct v4l2_subdev *sd, u32 val)
 
 	info->focus_status = 0;
 	info->low_speed = 0;
-	info->width = 1296;
-	info->height = 972;
+	info->width = 1920;
+	info->height = 1080;
 	info->hflip = 0;
 	info->vflip = 0;
 	info->gain = 0;
@@ -281,7 +278,7 @@ static int sensor_init(struct v4l2_subdev *sd, u32 val)
 
 static int sensor_get_fmt_mbus_core(struct v4l2_subdev *sd, int *code)
 {
-	*code = MEDIA_BUS_FMT_SGBRG10_1X10;
+	*code = MEDIA_BUS_FMT_SGBRG8_1X8;
 	return 0;
 }
 
@@ -328,14 +325,15 @@ static long sensor_ioctl(struct v4l2_subdev *sd, unsigned int cmd, void *arg)
 /*
  * Store information about the video data format.
  */
+//camerademo GBRG10 1296 972 30 bmp /home/ 5
 static struct sensor_format_struct sensor_formats[] = {
 	{
-		.desc = "Raw RGB Bayer 10",	//'B', 'A', '8', '1'
-		.mbus_code = MEDIA_BUS_FMT_SGBRG10_1X10,	//MEDIA_BUS_FMT_SRGGB8_1X8
-		.regs = sensor_fmt_raw,
-		.regs_size = ARRAY_SIZE(sensor_fmt_raw),
+		.desc = "Raw RGB Bayer 10",
+		.mbus_code = MEDIA_BUS_FMT_SGBRG10_1X10,
+		.regs = sensor_fmt_raw10,
+		.regs_size = ARRAY_SIZE(sensor_fmt_raw10),
 		.bpp = 1
-	},
+	}
 };
 #define N_FMTS ARRAY_SIZE(sensor_formats)
 
@@ -363,25 +361,25 @@ static struct sensor_win_size sensor_win_sizes[] = {
 	  .regs_size  = ARRAY_SIZE(ov5647_2592x1944_10bpp),
 	  .set_size   = NULL,
 	},
-	{
+	*/{
 	.width	  	= 1920,
 	.height	  	= 1080,
 	.hoffset	= 0,
 	.voffset	= 0,
 	.hts		= 2416,
 	.vts		= 0x450,
-	.pclk		= 68*1000*1000,
-	.mipi_bps   = 300*1000*1000,
+	.pclk		= 100*1000*1000,
+	.mipi_bps   = 1920*1080*10*30,
 	.fps_fixed  = 30,
 	.bin_factor = 1,
 	.intg_min   = 16,
 	.intg_max   = (1984-4)<<4,
 	.gain_min   = 1<<4,
 	.gain_max   = 64<<4,
-	.regs		= ov5647_1080p30_10bpp,
-	.regs_size  = ARRAY_SIZE(ov5647_1080p30_10bpp),
+	.regs		= ov5647_rpi3_1080,
+	.regs_size  = ARRAY_SIZE(ov5647_rpi3_1080),
 	.set_size   = NULL,
-	},
+	},/*
 	{
 	.width	  	= 1296,
 	.height	  	= 972,
@@ -402,15 +400,15 @@ static struct sensor_win_size sensor_win_sizes[] = {
 	.set_size   = NULL,
 	},*/
 	//VGA
-	{
+	/*{
 	.width	  	= 640,
 	.height	  	= 480,
 	.hoffset	= 0,
 	.voffset	= 0,
 	.hts		= 0x1200,	//Horizontal total size   1852 (unit pclk)
 	.vts		= 0x021E,	//Vertical total size 0x1f8 (unit line)
-	.pclk		= 46.5*MHZ,
-	.mipi_bps   = 222*MHZ,
+	.pclk		= 46.5*MHZ*2,
+	.mipi_bps   = 222*MHZ*2,
 	.fps_fixed  = 60,	//fps = camera_clk /(hts * vts)
 	.bin_factor = 1,
 	.intg_min   = 16,
@@ -420,7 +418,7 @@ static struct sensor_win_size sensor_win_sizes[] = {
 	.regs		= ov5647_640x480_custom_1lane,
 	.regs_size  = ARRAY_SIZE(ov5647_640x480_custom_1lane),
 	.set_size   = NULL,
-	},
+	},*/
 	{
 	.width	  	= 1296,	//camerademo GBRG10 1296 972 15 bmp /tmp 5
 	.height	  	= 972,
@@ -428,7 +426,7 @@ static struct sensor_win_size sensor_win_sizes[] = {
 	.voffset	= 0,
 	.hts		= 1128,	//Horizontal total size   1852 (unit pclk)
 	.vts		= 1200,	//Vertical total size 0x1f8 (unit line)
-	.pclk		= 46.5*MHZ,
+	.pclk		= 91.2*MHZ,
 	.mipi_bps   = 1296*972*10*30,
 	.fps_fixed  = 30,	//fps = camera_clk /(hts * vts)
 	.bin_factor = 1,
@@ -441,10 +439,6 @@ static struct sensor_win_size sensor_win_sizes[] = {
 	.set_size   = NULL,
 	},
 };
-
-#define ov5647_DEFAULT_MODE	(&ov5647_modes[3])
-#define ov5647_DEFAULT_FORMAT	(ov5647_modes[3].format)
-
 #define N_WIN_SIZES (ARRAY_SIZE(sensor_win_sizes))
 
 static int sensor_reg_init(struct sensor_info *
@@ -678,13 +672,13 @@ static int sensor_probe(struct i2c_client *client,
 #ifdef CONFIG_SAME_I2C
 	info->sensor_i2c_addr = I2C_ADDR >> 1;
 #endif
-	info->fmt = &sensor_formats[0];
-	info->fmt_pt = &sensor_formats[0];
-	info->win_pt = &sensor_win_sizes[0];
+	info->fmt = &sensor_formats[1]; //default rgb8
+	info->fmt_pt = &sensor_formats[1];
+	info->win_pt = &sensor_win_sizes[0];	//default 640x480
 	info->fmt_num = N_FMTS;
 	info->win_size_num = N_WIN_SIZES;
 	info->sensor_field = V4L2_FIELD_NONE;
-	info->stream_seq = MIPI_BEFORE_SENSOR; //MIPI_BEFORE_SENSOR;
+	info->stream_seq = MIPI_BEFORE_SENSOR;
 	info->af_first_flag = 1;
 	info->exp = 0;
 	info->gain = 0;

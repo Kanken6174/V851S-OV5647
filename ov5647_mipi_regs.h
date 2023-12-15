@@ -985,6 +985,14 @@
 // Bit[1]: fcnt_mask_dis
 // Bit[0]: Frame counter reset
 
+#define FRAME_CONTROL01_REG_ADDR 0x4201 // FRAME CONTROL01 0x00 RW
+// Bit[7:0]: fcnt_eof[15:8]
+
+#define FRAME_CONTROL02_REG_ADDR 0x4202 // FRAME CONTROL02 0x00 RW
+// Bit[7:0]: fcnt_eof[7:0]
+
+#define FRAME_CONTROL03_REG_ADDR 0x4203 // FRAME CONTROL03 0x00 RW
+
 //Digital video port (parrallel csi) related registers ------------------------------------------
 #define DVP_MODE_SELECT_REG_ADDR 0x4700 // DVP MODE SELECT 0x04 RW
 // Bit[3]: CCIR v select
